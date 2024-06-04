@@ -1,0 +1,26 @@
+{
+    "files.associations": {
+        "*.rmd": "markdown",
+        "system_error": "c",
+        "stdarg.h": "c",
+        "curses.h": "c",
+        "ncurses.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c"
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/bissy/Documents/github/c_game_of_life",
+            "binaryPath": "/home/bissy/Documents/github/c_game_of_life/main",
+            "binaryArgs": [
+                "-ni"
+            ]
+        },
+        {
+            "cwd": "/home/bissy/Documents/github/c_game_of_life",
+            "binaryPath": "/home/bissy/Documents/github/c_game_of_life/main",
+            "binaryArgs": []
+        }
+    ]
+}
