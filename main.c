@@ -176,11 +176,6 @@ Settings* create_settings(int argc, char *argv[]) {
     return settings;
 }
 
-/*
- * Frees the give history.
- * @author Matthias Ebner
- * @param history: the history to free
- */
 void free_history(History *history){
     if (history == NULL) return;
     if (history->calc_time_history != NULL) free(history->calc_time_history);
