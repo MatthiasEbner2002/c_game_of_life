@@ -29,6 +29,7 @@ Options:
 - **c** = color
 - **h** = history
 - **r** = reload
+- **p** = pause
 - **2** = mode
 
 ## color cells meaning
