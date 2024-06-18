@@ -583,10 +583,29 @@ GameOfLife* create_game(Settings *settings) {
     return game;
 }
 
+/*
+ * Initializes the color pairs.
+ * If the terminal does not support colors, the function will return 0.
+ * @return 1 if the color pairs are initialized, 0 otherwise.
+**/
+int innit_color_pairs(){
+    if (has_colors() == FALSE) {
+        log_error("Your terminal does not support color!");
+        printw("Your terminal does not support color\n");
+        return 0;
+    }
+    start_color();
+    // Define the color pairs
+    init_pair(1, COLOR_RED, COLOR_WHITE);
+    init_pair(2, COLOR_GREEN, COLOR_WHITE);
+    init_pair(3, COLOR_BLUE, COLOR_WHITE);
+    init_pair(4, COLOR_YELLOW, COLOR_WHITE);
+    return 1;
+}
+
 int main(int argc, char *argv[]) {
     log_info("[=============| START |=============]");
     Settings *settings = create_settings(argc, argv);
-
     if (settings->use_two_cells_per_block == true && settings->use_colors == true)
         log_error("Two cells per block cannot display colors.");
 
@@ -596,20 +615,12 @@ int main(int argc, char *argv[]) {
     curs_set(FALSE);  // Don't show the cursor
     noecho();  // Don't show the input
 
-    if (settings->use_colors == true){
-        if (has_colors() == FALSE) {
-            printw("Your terminal does not support color\n");
-            endwin();
-            exit(1);
-        }
-        start_color(); // Start the color functionality
-        // Define the color pairs
-        init_pair(1, COLOR_RED, COLOR_WHITE);
-        init_pair(2, COLOR_GREEN, COLOR_WHITE);
-        init_pair(3, COLOR_BLUE, COLOR_WHITE);
-        init_pair(4, COLOR_YELLOW, COLOR_WHITE);
+    // Start colors, if terminal does not support colors, exit the main.
+    if(!innit_color_pairs()) {
+        endwin();
+        return EXIT_FAILURE;
     }
-    
+
     GameOfLife *game = create_game(settings);
     double start_time = 0;
     //for (int i = 0; i < 10; i++) {
@@ -620,16 +631,19 @@ int main(int argc, char *argv[]) {
         if (!game->settings->pause)
             game->update_cells(game);
 
+        // Draw the game field
         wclear(game->game_window);
         game->draw_game_field(game);
         wrefresh(game->game_window);
-    
+
+        // Draw the info box
         if (game->settings->show_info) {
             wclear(game->info_box);
             game->draw_info_box(game);
             wrefresh(game->info_box);
         }
 
+        // Update the last calculation time
         game->last_calc_time = omp_get_wtime() - start_time;
         if (!game->settings->pause) {
             game->update_history(game);
