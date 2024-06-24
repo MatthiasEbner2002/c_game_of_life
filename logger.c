@@ -1,5 +1,7 @@
 #include "logger.h"
 
+LogLevel log_level = LOG_LEVEL;
+
 const char* get_log_string(LogLevel level) {
     switch (level) {
         case LOG_DEBUG: return " DEBUG ";
@@ -9,6 +11,20 @@ const char* get_log_string(LogLevel level) {
         default: return "UNKNOWN";
     }
 }
+
+void set_log_level(LogLevel ll) {
+    log_info("Changing LogLevel: %s(%d) -> %s(%d)",get_log_string(log_level) ,log_level, get_log_string(ll), ll);
+    log_level = ll;
+}
+
+int get_log_level(){
+    return log_level;
+}
+
+const char *get_log_level_str(){
+    return get_log_string(log_level);
+}
+
 
 void get_timestamp(char *buffer) {
     struct timeval tv;
@@ -25,7 +41,7 @@ void get_timestamp(char *buffer) {
 
 
 void log_message_string(LogLevel level, char *file, const char* func, const int line, char* msg){
-    if (level > LOG_LEVEL) return;
+    if (level > log_level) return;
     char timestamp[80];  // the timestamp of the log message, max size is 80
     get_timestamp(timestamp);
 

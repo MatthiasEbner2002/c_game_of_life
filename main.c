@@ -2,18 +2,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <locale.h>
-#include <signal.h>
-#include <time.h>
 #include <omp.h>
-#include "logger.h"
 
 #define DELAY 15000
-// #define DELAY 0
 
 #define CHAR_LOWER_HALF "▄"
 #define CHAR_UPPER_HALF "▀"
 #define CHAR_FULL_BLOCK "█"
 #define ALIVE_STRING "██"
+#include "logger.h"
+
 
 /*
  * @struct Settings
@@ -270,7 +268,10 @@ void update_cells(GameOfLife *game) {
  * @param game: the game to handle the resize for.
 **/
 void handle_resize(GameOfLife *game){
-    if (game == NULL) return;
+    if (game == NULL || game->cells == NULL){
+        log_error("Cannot resize given GameOfLife is None or the cells are None.");
+        return;
+    }
     int old_height = game->height;
     int old_width = game->width;
     update_game_x_y(game);
@@ -313,6 +314,7 @@ void handle_resize(GameOfLife *game){
             game->cells[i] = realloc(game->cells[i], sizeof(Cell) * game->width);
     }
 }
+
 /*
  * Returns the color of the cell. The color depends on the number of iterations the cell is alive.
  * @param cell: the cell to get the color for.
@@ -521,6 +523,8 @@ void handle_key_input(GameOfLife *game, bool *running) {
             game->history->free_history(game->history);
             game->history = create_history(old_history_size);
             break;
+        default:
+            break;
     }
 }
 
@@ -554,7 +558,8 @@ void update_history(GameOfLife *game){
 GameOfLife* create_game(Settings *settings) {
     GameOfLife *game = calloc(1, sizeof(GameOfLife));
     if (settings != NULL) game->settings = settings;
-    else game->settings = calloc(1, sizeof(Settings));
+    else game->settings = create_settings(0, NULL);
+
 
     game->game_window = newwin(0, 0, 0, 0);
     game->info_box = newwin(game->settings->info_box_height, 0, 0, 0);
@@ -606,9 +611,11 @@ int innit_color_pairs(){
 int main(int argc, char *argv[]) {
     log_info("[=============| START |=============]");
     Settings *settings = create_settings(argc, argv);
+    set_log_level(LOG_DEBUG);
+
     if (settings->use_two_cells_per_block == true && settings->use_colors == true)
         log_error("Two cells per block cannot display colors.");
-
+// set_log_level_error();
     setlocale(LC_CTYPE, "");  // Activate UTF-8 support for the terminal, must be called before initscr()
     WINDOW *win = initscr();  // Initialize the curses library and the standard screen
     nodelay(win, TRUE);  // Makes the getch() non-blocking, getch is used for input
@@ -617,6 +624,7 @@ int main(int argc, char *argv[]) {
 
     // Start colors, if terminal does not support colors, exit the main.
     if(!innit_color_pairs()) {
+        log_error("Terminal does not support colors, exiting program ...");
         endwin();
         return EXIT_FAILURE;
     }
@@ -627,7 +635,10 @@ int main(int argc, char *argv[]) {
     bool running = true;
     while (running) {
         start_time = omp_get_wtime();
-        game->handle_resize(game);
+
+        game->handle_resize(game); //resize the cells array if the screen size or mode has changed
+
+        // Update cells if game is not paused
         if (!game->settings->pause)
             game->update_cells(game);
 
@@ -635,6 +646,7 @@ int main(int argc, char *argv[]) {
         wclear(game->game_window);
         game->draw_game_field(game);
         wrefresh(game->game_window);
+
 
         // Draw the info box
         if (game->settings->show_info) {
@@ -653,7 +665,7 @@ int main(int argc, char *argv[]) {
 
         game->handle_key_input(game, &running);
         
-        usleep(DELAY);
+        usleep(DELAY); // wait for a fixed interval
     }
     game->free_game(game);
     delwin(win);

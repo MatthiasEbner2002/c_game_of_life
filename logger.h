@@ -15,7 +15,9 @@
 #endif
 
 #define LOG_PATH "log.log"
-#define LOG_LEVEL 4
+#ifndef LOG_LEVEL
+    #define LOG_LEVEL 4
+#endif
 #define LOG_OPTIONS_COUNT 4
 
 typedef enum {
@@ -37,9 +39,13 @@ typedef enum {
 #define log_with_level(level, msg, ...) log_message(level, __SHORT_FILE__, __func__, __LINE__, msg, ## __VA_ARGS__)
 
 /*returns the string used for a LogLevel.*/
+void set_log_level(LogLevel level);
+int get_log_level_int();
+const char *get_log_level_str();
 const char *get_log_string(LogLevel level);
 
 void log_message_string(LogLevel level, char *file, const char* func, const int line, char* msg);
 void log_message(LogLevel level, char* file, const char *func, const int line, char* msg, ...);
+
 
 #endif /* LOGGER_H */

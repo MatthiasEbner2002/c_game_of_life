@@ -1,6 +1,8 @@
 CC = gcc
-CFLAGS = ./logger.c -std=gnu11 -Wall -Werror -Wextra -O3 -fopenmp -g
-LOADLIBES = -lncursesw
+CFLAGS = -std=gnu11 -Wall -Werror -Wextra -O3 -fopenmp ./logger.c
+CFLAGS += -g  # For valgrind
+LDLIBS = -lncursesw
+
 .PHONY: all
 all: main
 
